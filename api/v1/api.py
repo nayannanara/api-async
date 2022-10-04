@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from api.v0.endpoints import curso
+from api.v1.endpoints import curso
 
 api_router = APIRouter()
 

@@ -1,5 +1,6 @@
-from core.configs import settings
 from core.database import engine
+
+from sqlmodel import SQLModel
 
 
 async def create_tables() -> None:
@@ -7,8 +8,8 @@ async def create_tables() -> None:
     print('Criando as tabelas no banco de dados')
 
     async with engine.begin() as conn:
-        await conn.run_sync(settings.DBBaseModel.metadata.drop_all)
-        await conn.run_sync(settings.DBBaseModel.metadata.create_all)
+        await conn.run_sync(SQLModel.metadata.drop_all)
+        await conn.run_sync(SQLModel.metadata.create_all)
 
     print('tabelas criadas com sucesso')
 

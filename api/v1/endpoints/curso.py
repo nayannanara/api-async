@@ -2,19 +2,22 @@ from typing import List
 from fastapi import APIRouter, status, Depends, HTTPException, Response
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from sqlmodel import select
 
+# bypass warning SQLMODEL select
+from sqlmodel.sql.expression import Select, SelectOfScalar
 from models.curso import Curso
-from schemas.curso import CursoSchema
 
 from core.deps import get_session
 
+SelectOfScalar.inherit_cache = True
+Select.inherit_cache = True
 
 router = APIRouter()
 
 
-@router.post('/', status_code=status.HTTP_201_CREATED, response_model=CursoSchema)
-async def post_curso(curso_in: CursoSchema, db: AsyncSession = Depends(get_session)):
+@router.post('/', status_code=status.HTTP_201_CREATED, response_model=Curso)
+async def post_curso(curso_in: Curso, db: AsyncSession = Depends(get_session)) -> Curso:
     curso = Curso(titulo=curso_in.titulo, aulas=curso_in.aulas, horas=curso_in.aulas)
 
     db.add(curso)
@@ -23,15 +26,15 @@ async def post_curso(curso_in: CursoSchema, db: AsyncSession = Depends(get_sessi
     return curso
 
 
-@router.get('/', status_code=status.HTTP_200_OK, response_model=List[CursoSchema])
-async def get_cursos(db: AsyncSession = Depends(get_session)) -> CursoSchema:
-    cursos: List[CursoSchema] = (await db.execute(select(Curso))).scalars().all()
+@router.get('/', status_code=status.HTTP_200_OK, response_model=List[Curso])
+async def get_cursos(db: AsyncSession = Depends(get_session)) -> Curso:
+    cursos: List[Curso] = (await db.execute(select(Curso))).scalars().all()
 
     return cursos
 
 
-@router.get('/{id}', status_code=status.HTTP_200_OK, response_model=CursoSchema)
-async def get_curso(id: int, db: AsyncSession = Depends(get_session)) -> CursoSchema:
+@router.get('/{id}', status_code=status.HTTP_200_OK, response_model=Curso)
+async def get_curso(id: int, db: AsyncSession = Depends(get_session)) -> Curso:
     curso =  (await db.execute(select(Curso).filter_by(id=id))).scalars().first()
 
     if not curso:
@@ -40,8 +43,8 @@ async def get_curso(id: int, db: AsyncSession = Depends(get_session)) -> CursoSc
     return curso
         
 
-@router.put('/{id}', status_code=status.HTTP_202_ACCEPTED, response_model=CursoSchema)
-async def put_curso(id: int, curso_in: CursoSchema, db: AsyncSession = Depends(get_session)) -> CursoSchema:
+@router.put('/{id}', status_code=status.HTTP_202_ACCEPTED, response_model=Curso)
+async def put_curso(id: int, curso_in: Curso, db: AsyncSession = Depends(get_session)) -> Curso:
     curso =  (await db.execute(select(Curso).filter_by(id=id))).scalars().first()
 
     if not curso:
